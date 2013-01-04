@@ -1,0 +1,110 @@
+require 'spec_helper'
+
+describe 'S3FTPDriver' do
+  # Open methods for testing.
+  class S3FTPDriver 
+    def open_make_dir(path)
+      make_dir(path) { |success| return success }
+    end
+    
+    def open_change_dir(path)
+      change_dir(path) { |success| return success }
+    end
+    
+    def open_dir_contents
+      dir_contents('/'){ |contents| return contents }
+    end
+
+    def open_delete_dir(path)
+      delete_dir(path) { |success| return success }
+    end
+
+    def open_bytes(path)
+      bytes(path) { |success| return success }
+    end
+
+    def open_get_file(path)
+      get_file(path) { |data| return data }
+    end
+
+    class SimpleDataSocket 
+      def initialize(data)
+        @data = data;
+      end
+      def on_stream(&block)
+        yield @data
+      end
+      def callback(&block)
+        yield
+      end
+    end
+
+    def open_put_file_streamed(path, data)
+    end
+  end
+
+  def contains_directory(collection, path)
+    collection.each do |directory|
+      return true if directory.name.eql?(path) && directory.directory
+    end
+    return false
+  end
+
+  let(:s3) { S3FTPDriver.new }
+  let(:test_dir) { '/test_dir/' }
+  let(:root_level_file_path) { '/text_file.txt' }
+  let(:root_level_file_data) { "This is a test file\n" }
+  let(:root_level_file_size) { root_level_file.size }
+
+  describe 'create a file at root level' do
+    it "upload the file" do
+      VCR.use_cassette "root file upload" do
+        s3.open_put_file_streamed(root_level_file_path, root_level_file_data).size.should == root_level_file_size
+      end
+    end
+  end
+
+  describe 'create a test directory at root level' do
+    before do
+      VCR.use_cassette 'before test dir creation' do
+        s3.open_delete_dir(test_dir)
+        s3.open_make_dir(test_dir)
+      end
+    end   
+     
+    it "should exist" do
+      VCR.use_cassette 'test dir creation' do
+        response = s3.open_dir_contents
+        contains_directory(response, test_dir).should be_true 
+      end
+    end
+
+    it "should have zero size" do
+      VCR.use_cassette "test dir size" do
+        response = s3.open_bytes(test_dir)
+        response.should == 0
+      end
+    end
+  
+    describe 'create a file inside the test directory' do
+
+    end
+
+    it "should be downloadable" do
+      VCR.use_cassette "download dir" do
+        response = s3.open_get_file('/fake.rb')
+        response.should_not be_false
+      end
+    end
+
+    describe 'move to test dir' do
+      it "should move" do
+        VCR.use_cassette "move to test dir" do 
+          response = s3.open_change_dir(test_dir)
+          response.should be_true
+        end
+      end
+    end
+  end
+
+end

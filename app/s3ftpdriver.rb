@@ -4,24 +4,27 @@ require 'aws-sdk'
 require 'em-ftpd'
 
 class S3FTPDriver
+  #ACCESS_KEY_ID = "AKIAJ2IGHZQHCSJYT22A"
+  #SECRET_ACCESS_KEY = "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"
+  #BUCKET_NAME = 'em-ftpd-trial-assignment'
   ACCESS_KEY_ID = "AKIAJHFPPNK6KAKV63RQ"
   SECRET_ACCESS_KEY = "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"
   BUCKET_NAME = 'werquinigo-test'
+  ROOT_FOLDER = 'werquinigo/'
 	
-  USER_PASS_FILE = File.expand_path(File.dirname(__FILE__) + '/config.csv')
   # Minimum packet size defined by Amazon.
   DATA_TRANSFER_PACKET_SIZE = 5 * 1024 * 1024
 	
   :root_path_level
   :any_dir_level	
 
-  def initialize()
+  def initialize(user_pass_file)
     @s3 = AWS::S3.new(:access_key_id => ACCESS_KEY_ID,
                       :secret_access_key => SECRET_ACCESS_KEY)
 
     @bucket = @s3.buckets[BUCKET_NAME]
     @users = {}
-    CSV.parse(File.open(USER_PASS_FILE)).map { |user, pass| @users[user] = pass }
+    CSV.parse(File.open(user_pass_file)).map { |user, pass| @users[user] = pass }
   end
 
   def change_dir(path, &block)
@@ -29,14 +32,14 @@ class S3FTPDriver
   end
 	
   def dir_contents(path, &block)
-    path = without_root_slash(path)
+    path = to_server_path(without_root_slash(path))
     contents = []
     @bucket.objects.with_prefix(path).each do |obj|
       path_suffix = obj.key[path.size..-1]
       if is_dir?(path_suffix, :root_path_level)
-        contents.push dir_item(obj.key)
+        contents.push dir_item(to_client_path(obj.key))
       elsif is_file?(path_suffix, :root_path_level)
-        contents.push file_item(obj.key, obj.content_length)
+        contents.push file_item(to_client_path(obj.key), obj.content_length)
       end
     end
     yield contents
@@ -47,7 +50,7 @@ class S3FTPDriver
   end
 
   def bytes(path, &block)
-    path = without_root_slash(path)
+    path = to_server_path(without_root_slash(path))
     if @bucket.objects[path].exists?
       yield @bucket.objects[path].content_length
     else
@@ -56,7 +59,7 @@ class S3FTPDriver
   end
 
   def get_file(path, &block)
-    path = without_root_slash(path)
+    path = to_server_path(without_root_slash(path))
     if @bucket.objects[path].exists?
       yield @bucket.objects[path].read
     else
@@ -65,13 +68,13 @@ class S3FTPDriver
   end
 
   def put_file_streamed(path, datasocket, &block)
-    object = @bucket.objects[without_root_slash(path)]
+    object = @bucket.objects[to_server_path(without_root_slash(path))]
     part1 = ''
     part2 = ''
     single_part = true
     multipart_upload = object.multipart_upload
     # Stream the parts. It must be ensured that in multipart upload each part
-    # has at least 5 MB.
+    # has a size of at least DATA_TRANSFER_PACKET_SIZE.
     datasocket.on_stream do |packet|
       if part1.size >= DATA_TRANSFER_PACKET_SIZE
         part2 << packet
@@ -103,20 +106,20 @@ class S3FTPDriver
  end
 
   def delete_file(path, &block)
-    path = without_root_slash(path)
+    path = to_server_path(without_root_slash(path))
   yield @bucket.objects[path].exists? &&
     @bucket.objects[path].delete.nil?
   end
 
   def delete_dir(path, &block)
-    path = without_root_slash(path)
+    path = to_server_path(without_root_slash(path))
     @bucket.objects.with_prefix(path).delete_all
     yield !@bucket.objects[path].exists?
   end
 
   def rename(from, to, &block)
-    path = without_root_slash(from)
-    new_path = without_root_slash(to)
+    path = to_server_path(without_root_slash(from))
+    new_path = to_server_path(without_root_slash(to))
     result = true
     @bucket.objects.with_prefix(path).each do |obj|
       new_name = new_path + obj.key[path.size..-1]
@@ -126,7 +129,7 @@ class S3FTPDriver
   end
 
   def make_dir(path, &block)
-    path = without_root_slash(path)
+    path = to_server_path(without_root_slash(path))
     path = path + '/' if path[-1] != '/'
     yield @bucket.objects.create(path, '')
   end
@@ -144,7 +147,7 @@ class S3FTPDriver
   # the directory is at root level or not.
   # 	
   def is_dir?(dir, level)
-    path = without_root_slash(dir)
+    path = to_client_path(without_root_slash(dir))
     dir[-1] == '/' && (level == :root_path_level && dir.count('/') == 1 ||
         level == :any_dir_level)
   end
@@ -153,7 +156,8 @@ class S3FTPDriver
   # is at root level or not.
   # 
   def is_file?(file, level)
-    !is_dir?(file, level) && !dir.empty? && (level == :root_path_level &&
+    file = to_client_path(file)
+    !is_dir?(file, level) && !file.empty? && (level == :root_path_level &&
         without_root_slash(file).count('/') == 0 || level == :any_dir_level)
   end
 
@@ -171,6 +175,22 @@ class S3FTPDriver
     EM::FTPD::DirectoryItem.new(:name => name,
                                 :directory => false,
                                 :size => bytes)
+  end
+
+  # Prepare the path for the server
+  # 
+  def to_server_path(path)
+    ROOT_FOLDER + without_root_slash(path)
+  end
+
+  # Prepare the path for the client
+  #
+  def to_client_path(path)
+    if path.start_with?(ROOT_FOLDER) 
+      path[ROOT_FOLDER.size..-1]
+    else
+      path
+    end
   end
 
 end

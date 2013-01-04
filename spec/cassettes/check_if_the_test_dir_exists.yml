@@ -1,0 +1,89 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://werquinigo-test.s3.amazonaws.com/?max-keys=1000&prefix=werquinigo/
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Content-Type:
+      - ''
+      User-Agent:
+      - aws-sdk-ruby/1.8.0 ruby/1.9.3 x86_64-linux
+      Date:
+      - Fri, 04 Jan 2013 00:35:11 -0500
+      Authorization:
+      - AWS AKIAJHFPPNK6KAKV63RQ:MjT4igR9ONDJSGHRDE/sq76x3xs=
+      Accept:
+      - ! '*/*'
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      X-Amz-Id-2:
+      - TIaHGep6Coripcc92bZSRWm1F4ELJa2M9wPn9g/AUZccBq1I1D+swuF1df/oNfBs
+      X-Amz-Request-Id:
+      - 9E2BE93014FCD918
+      Date:
+      - Fri, 04 Jan 2013 05:35:13 GMT
+      Content-Type:
+      - application/xml
+      Transfer-Encoding:
+      - chunked
+      Server:
+      - AmazonS3
+    body:
+      encoding: US-ASCII
+      string: ! '<?xml version="1.0" encoding="UTF-8"?>
+
+        <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>werquinigo-test</Name><Prefix>werquinigo/</Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated><Contents><Key>werquinigo/</Key><LastModified>2013-01-04T05:34:54.000Z</LastModified><ETag>&quot;d41d8cd98f00b204e9800998ecf8427e&quot;</ETag><Size>0</Size><Owner><ID>5eaa20ea62829d8bebf368c2ad853c9cadb24b71857f26096c7682beb509ca8e</ID><DisplayName>a20012251</DisplayName></Owner><StorageClass>STANDARD</StorageClass></Contents><Contents><Key>werquinigo/test_dir/</Key><LastModified>2013-01-04T05:35:12.000Z</LastModified><ETag>&quot;d41d8cd98f00b204e9800998ecf8427e&quot;</ETag><Size>0</Size><Owner><ID>5eaa20ea62829d8bebf368c2ad853c9cadb24b71857f26096c7682beb509ca8e</ID><DisplayName>a20012251</DisplayName></Owner><StorageClass>STANDARD</StorageClass></Contents><Contents><Key>werquinigo/test_file_moved.txt</Key><LastModified>2013-01-04T05:35:06.000Z</LastModified><ETag>&quot;5dd39cab1c53c2c77cd352983f9641e1&quot;</ETag><Size>20</Size><Owner><ID>5eaa20ea62829d8bebf368c2ad853c9cadb24b71857f26096c7682beb509ca8e</ID><DisplayName>a20012251</DisplayName></Owner><StorageClass>STANDARD</StorageClass></Contents></ListBucketResult>'
+    http_version: 
+  recorded_at: Fri, 04 Jan 2013 05:35:12 GMT
+- request:
+    method: head
+    uri: https://werquinigo-test.s3.amazonaws.com/werquinigo/test_file_moved.txt
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      Content-Type:
+      - ''
+      User-Agent:
+      - aws-sdk-ruby/1.8.0 ruby/1.9.3 x86_64-linux
+      Date:
+      - Fri, 04 Jan 2013 00:35:12 -0500
+      Authorization:
+      - AWS AKIAJHFPPNK6KAKV63RQ:17w7osZsoaL+CB4V1dDa2JSsI+c=
+      Accept:
+      - ! '*/*'
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      X-Amz-Id-2:
+      - n84zfpvGiyHOrEQ32CuPYf2q8GATj0bRkrwGhKI7hLUhwWPrWKK61rZIabvhGoRx
+      X-Amz-Request-Id:
+      - BD7925B096BA44B8
+      Date:
+      - Fri, 04 Jan 2013 05:35:14 GMT
+      Last-Modified:
+      - Fri, 04 Jan 2013 05:35:06 GMT
+      Etag:
+      - ! '"5dd39cab1c53c2c77cd352983f9641e1"'
+      Accept-Ranges:
+      - bytes
+      Content-Type:
+      - ''
+      Content-Length:
+      - '20'
+      Server:
+      - AmazonS3
+    body:
+      encoding: US-ASCII
+      string: ''
+    http_version: 
+  recorded_at: Fri, 04 Jan 2013 05:35:13 GMT
+recorded_with: VCR 2.3.0
