@@ -9,6 +9,3 @@ require 'vcr'
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f }
 
 require File.dirname(__FILE__) + "/../app/s3ftpdriver.rb"
-#RSpec.configure do |config|
-#  config.include ReaderSpecHelper
-#end

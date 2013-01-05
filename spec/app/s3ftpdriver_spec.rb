@@ -16,7 +16,7 @@ describe 'S3FTPDriver' do
     return false
   end
 
-  let(:s3) { S3FTPDriver.new }
+  let(:s3) { S3FTPDriver.new(File.dirname(__FILE__) + "/../support/auth.csv") }
   let(:test_dir) { '/test_dir/' }
   let(:root_level_file_path) { '/test_file.txt' }
   let(:root_level_renamed_file_path) { '/test_file_moved.txt' }
