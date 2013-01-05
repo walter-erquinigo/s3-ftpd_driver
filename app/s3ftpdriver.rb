@@ -192,5 +192,4 @@ class S3FTPDriver
       path
     end
   end
-
 end
