@@ -28,11 +28,11 @@ class S3FTPDriver
   end
 
   def change_dir(path, &block)
-    yield (path == '/' or @bucket.objects[without_root_slash(path)].exists?)
+    yield (path == '/' or @bucket.objects[to_dir(to_server_path(without_root_slash(path)))].exists?)
   end
 	
   def dir_contents(path, &block)
-    path = to_server_path(without_root_slash(path))
+    path = to_dir(to_server_path(without_root_slash(path)))
     contents = []
     @bucket.objects.with_prefix(path).each do |obj|
       path_suffix = obj.key[path.size..-1]
@@ -112,7 +112,7 @@ class S3FTPDriver
   end
 
   def delete_dir(path, &block)
-    path = to_server_path(without_root_slash(path))
+    path = to_dir(to_server_path(without_root_slash(path)))
     @bucket.objects.with_prefix(path).delete_all
     yield !@bucket.objects[path].exists?
   end
@@ -129,7 +129,7 @@ class S3FTPDriver
   end
 
   def make_dir(path, &block)
-    path = to_server_path(without_root_slash(path))
+    path = to_dir(to_server_path(without_root_slash(path)))
     path = path + '/' if path[-1] != '/'
     yield @bucket.objects.create(path, '')
   end
@@ -190,6 +190,16 @@ class S3FTPDriver
       path[ROOT_FOLDER.size..-1]
     else
       path
+    end
+  end
+
+  # Appends the / character for directories
+  #
+  def to_dir(path)
+    if path[-1] == '/'
+      path
+    else
+      path + '/'
     end
   end
 end

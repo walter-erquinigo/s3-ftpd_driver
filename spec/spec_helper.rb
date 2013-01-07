@@ -8,4 +8,4 @@ require 'vcr'
 # in spec/support/ and its subdirectories.
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f }
 
-require File.dirname(__FILE__) + "/../app/s3ftpdriver.rb"
+require 's3ftpdriver'
