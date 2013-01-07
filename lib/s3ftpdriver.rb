@@ -4,9 +4,6 @@ require 'aws-sdk'
 require 'em-ftpd'
 
 class S3FTPDriver
-  #ACCESS_KEY_ID = "AKIAJ2IGHZQHCSJYT22A"
-  #SECRET_ACCESS_KEY = "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"
-  #BUCKET_NAME = 'em-ftpd-trial-assignment'
   ACCESS_KEY_ID = "AKIAJHFPPNK6KAKV63RQ"
   SECRET_ACCESS_KEY = "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"
   BUCKET_NAME = 'werquinigo-test'
